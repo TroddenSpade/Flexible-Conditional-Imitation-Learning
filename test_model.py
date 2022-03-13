@@ -29,8 +29,6 @@ print('Using model {0} for testing.'.format(MODEL_PATH))
 model = tf.keras.models.load_model(MODEL_PATH)
 print("Model loaded")
 
-model.save('my_model.h5')
-
 
 print("press key")
 cv2.waitKey()
