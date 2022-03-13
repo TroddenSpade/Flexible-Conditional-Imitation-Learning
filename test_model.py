@@ -24,10 +24,12 @@ route_coordinates = route.get_coordinates()
 print("Route loaded")
 
 
-# ##### Load Model ######
-# print('Using model {0} for testing.'.format(MODEL_PATH))
-# model = tf.keras.models.load_model(MODEL_PATH)
-# print("Model loaded")
+##### Load Model ######
+print('Using model {0} for testing.'.format(MODEL_PATH))
+model = tf.keras.models.load_model(MODEL_PATH)
+print("Model loaded")
+
+model.save('my_model.h5')
 
 
 print("press key")
@@ -88,12 +90,11 @@ while (True):
     image_buf[0] = get_image()
 
 
-    # model_output = model.predict([image_buf, control_buf, points_buf])
-    # print(model_output)
-    
-    car_controls.throttle = 0
-    car_controls.steering = 0
-    car_controls.brake = 0
+    model_output = model.predict([image_buf, control_buf, points_buf])
+    car_controls.throttle = float(model_output[0,0])
+    car_controls.steering = float((model_output[0,1] - 0.5) * 2.5)
+    car_controls.brake = float(0)
+
     print('Throttle = {0},  Steering = {1},   Brake = {2}'.format(car_controls.throttle, car_controls.steering, car_controls.brake))
     
     client.setCarControls(car_controls)
