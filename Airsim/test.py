@@ -1,82 +1,88 @@
-from tensorflow.keras.models import load_model
-import sys
-import numpy as np
-import glob
-import os
-import cv2
 import airsim
-import matplotlib.pyplot as plt
+import cv2
+import numpy as np
+import os
+import time
+import tempfile
 
-if ('../../PythonClient/' not in sys.path):
-    sys.path.insert(0, '../../PythonClient/')
-# from AirSimClient import *
-cv2.waitKey()
-# << Set this to the path of the model >>
-# If None, then the model with the lowest validation loss from training will be used
-MODEL_PATH = None
-
-if (MODEL_PATH == None):
-    models = glob.glob('./model/models/*.h5') 
-    best_model = max(models, key=os.path.getctime)
-    MODEL_PATH = r'D:\Users\Parsa Sam\Documents\GitHub\Autonomous-Car\Airsim\model\models\model_model.52-0.0002465.h5'
-    
-print('Using model {0} for testing.'.format(MODEL_PATH))
-print("press key")
-cv2.waitKey()
-
-
-
-model = load_model(MODEL_PATH)
-
-print("Model loaded")
-print("press key")
-cv2.waitKey()
-
-
+# connect to the AirSim simulator
 client = airsim.CarClient()
 client.confirmConnection()
 client.enableApiControl(True)
+print("API Control enabled: %s" % client.isApiControlEnabled())
 car_controls = airsim.CarControls()
-print('Connection established!')
 
-print("press key")
-cv2.waitKey()
+tmp_dir = os.path.join(tempfile.gettempdir(), "airsim_car")
+print ("Saving images to %s" % tmp_dir)
+try:
+    os.makedirs(tmp_dir)
+except OSError:
+    if not os.path.isdir(tmp_dir):
+        raise
 
-
-car_controls.steering = 0
-car_controls.throttle = 0
-car_controls.brake = 0
-
-image_buf = np.zeros((1, 59, 255, 3))
-state_buf = np.zeros((1,4))
-
-print("press key")
-cv2.waitKey()
-
-
-
-def get_image():
-    image_response = client.simGetImages([airsim.ImageRequest(0, airsim.ImageType.Scene, False, False)])[0]
-    image1d = np.fromstring(image_response.image_data_uint8, dtype=np.uint8)
-    image_rgba = image1d.reshape(image_response.height, image_response.width, 3)
-    return image_rgba[76:135,0:255,0:3].astype(float) / 255.0
-
-print("We got here")
-
-while (True):
+for idx in range(3):
+    # get state of the car
     car_state = client.getCarState()
-    
-    if (car_state.speed < 5):
-        car_controls.throttle = 0.5
-    else:
-        car_controls.throttle = 0.0
-    
-    image_buf[0] = get_image()
-    state_buf[0] = np.array([car_controls.steering, car_controls.throttle, car_controls.brake, car_state.speed])
-    model_output = model.predict([image_buf, state_buf])
-    print(model_output)
-    car_controls.steering = round(0.5 * float(model_output[0][0]), 2)
-    
-    print('Sending steering = {0}, throttle = {1}'.format(car_controls.steering, car_controls.throttle))
-    
+    print(car_state)
+    gps = client.getGpsData()
+    print(gps)
+
+    # go forward
+    car_controls.throttle = 0.5
+    car_controls.steering = 0
     client.setCarControls(car_controls)
+    print("Go Forward")
+    time.sleep(10)   # let car drive a bit
+
+    # # Go forward + steer right
+    # car_controls.throttle = 0.5
+    # car_controls.steering = 1
+    # client.setCarControls(car_controls)
+    # print("Go Forward, steer right")
+    # time.sleep(3)   # let car drive a bit
+
+    # # go reverse
+    # car_controls.throttle = -0.5
+    # car_controls.is_manual_gear = True
+    # car_controls.manual_gear = -1
+    # car_controls.steering = 0
+    # client.setCarControls(car_controls)
+    # print("Go reverse, steer right")
+    # time.sleep(3)   # let car drive a bit
+    # car_controls.is_manual_gear = False # change back gear to auto
+    # car_controls.manual_gear = 0
+
+    # apply brakes
+    car_controls.brake = 1
+    client.setCarControls(car_controls)
+    print("Apply brakes")
+    time.sleep(10)   # let car drive a bit
+    car_controls.brake = 0 #remove brake
+
+    # # get camera images from the car
+    # responses = client.simGetImages([
+    #     airsim.ImageRequest("0", airsim.ImageType.DepthVis),  #depth visualization image
+    #     airsim.ImageRequest("1", airsim.ImageType.DepthPerspective, True), #depth in perspective projection
+    #     airsim.ImageRequest("1", airsim.ImageType.Scene), #scene vision image in png format
+    #     airsim.ImageRequest("1", airsim.ImageType.Scene, False, False)])  #scene vision image in uncompressed RGB array
+    # print('Retrieved images: %d' % len(responses))
+
+    # for response_idx, response in enumerate(responses):
+    #     filename = os.path.join(tmp_dir, f"{idx}_{response.image_type}_{response_idx}")
+
+    #     if response.pixels_as_float:
+    #         print("Type %d, size %d" % (response.image_type, len(response.image_data_float)))
+    #         airsim.write_pfm(os.path.normpath(filename + '.pfm'), airsim.get_pfm_array(response))
+    #     elif response.compress: #png format
+    #         print("Type %d, size %d" % (response.image_type, len(response.image_data_uint8)))
+    #         airsim.write_file(os.path.normpath(filename + '.png'), response.image_data_uint8)
+    #     else: #uncompressed array
+    #         print("Type %d, size %d" % (response.image_type, len(response.image_data_uint8)))
+    #         img1d = np.fromstring(response.image_data_uint8, dtype=np.uint8) # get numpy array
+    #         img_rgb = img1d.reshape(response.height, response.width, 3) # reshape array to 3 channel image array H X W X 3
+    #         cv2.imwrite(os.path.normpath(filename + '.png'), img_rgb) # write to png
+
+#restore to original state
+client.reset()
+
+client.enableApiControl(False)

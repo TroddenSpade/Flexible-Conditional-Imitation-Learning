@@ -11,11 +11,12 @@ from utils.functions import quaternion_to_euler, convergent_points, find_route_i
 from utils.normalizers import normalize_points
 from utils.route import Route
 
-MODEL_PATH = 'saved_models/model-499'
+MODEL_PATH = 'saved_models/model-59.h5'
 ROUTE_PATH = 'r1.csv'
 N = 10
 RANGE = 50
 INDX = 0
+
 
 ###### Load Route ######
 route = Route(ROUTE_PATH, N)
@@ -93,6 +94,6 @@ while (True):
     car_controls.steering = float((model_output[0,1] - 0.5) * 2.5)
     car_controls.brake = float(0)
 
-    print('Throttle = {0},  Steering = {1},   Brake = {2}'.format(car_controls.throttle, car_controls.steering, car_controls.brake))
+    print('Throttle = {0},  Steering = {1},   Brake = {2}'.format(car_controls.throttle, car_controls.steering, float(model_output[0,2])))
     
     client.setCarControls(car_controls)
