@@ -1,0 +1,20 @@
+Frame 1 saved
+VehicleControl(throttle=0.000000, steer=0.000000, brake=0.000000, hand_brake=False, reverse=False, manual_gear_shift=False, gear=0) Transform(Location(x=-1.980020, y=249.430008, z=0.001575), Rotation(pitch=0.000000, yaw=90.000046, roll=0.000000)) 0.0 30.0 Green False None
+Frame 2 saved
+VehicleControl(throttle=0.000000, steer=0.000000, brake=0.000000, hand_brake=False, reverse=False, manual_gear_shift=False, gear=0) Transform(Location(x=-1.980020, y=249.430008, z=0.001575), Rotation(pitch=0.000000, yaw=90.000046, roll=0.000000)) 0.0 30.0 Green False None
+Frame 3 saved
+VehicleControl(throttle=0.000000, steer=0.000000, brake=0.000000, hand_brake=False, reverse=False, manual_gear_shift=False, gear=0) Transform(Location(x=-1.980020, y=249.430008, z=0.001575), Rotation(pitch=0.000000, yaw=90.000046, roll=0.000000)) 0.0 30.0 Green False None
+Frame 4 saved
+VehicleControl(throttle=0.850000, steer=0.000616, brake=0.000000, hand_brake=False, reverse=False, manual_gear_shift=False, gear=0) Transform(Location(x=-1.980020, y=249.430008, z=0.001501), Rotation(pitch=0.000000, yaw=90.000046, roll=0.000000)) 0.0020086669828742743 30.0 Green False None
+Frame 5 saved
+VehicleControl(throttle=0.850000, steer=0.000616, brake=0.000000, hand_brake=False, reverse=False, manual_gear_shift=False, gear=0) Transform(Location(x=-1.980020, y=249.430008, z=0.001459), Rotation(pitch=0.000000, yaw=90.000046, roll=0.000000)) 0.0020722292829304934 30.0 Green False None
+Frame 6 saved
+VehicleControl(throttle=0.850000, steer=0.000616, brake=0.000000, hand_brake=False, reverse=False, manual_gear_shift=False, gear=0) Transform(Location(x=-1.980020, y=249.430008, z=0.001437), Rotation(pitch=0.000000, yaw=90.000046, roll=0.000000)) 0.0010412025731056929 30.0 Green False None
+Frame 7 saved
+VehicleControl(throttle=0.850000, steer=0.000616, brake=0.000000, hand_brake=False, reverse=False, manual_gear_shift=False, gear=0) Transform(Location(x=-1.980019, y=249.430008, z=0.001416), Rotation(pitch=0.000000, yaw=90.000046, roll=0.000000)) 0.0009303855476900935 30.0 Green False None
+Frame 8 saved
+VehicleControl(throttle=0.850000, steer=0.000440, brake=0.000000, hand_brake=False, reverse=False, manual_gear_shift=False, gear=0) Transform(Location(x=-1.980019, y=249.430008, z=0.001400), Rotation(pitch=0.000000, yaw=90.000046, roll=0.000000)) 0.0006189918494783342 30.0 Green False None
+Frame 9 saved
+VehicleControl(throttle=0.850000, steer=0.000440, brake=0.000000, hand_brake=False, reverse=False, manual_gear_shift=False, gear=0) Transform(Location(x=-1.980020, y=249.430008, z=0.001411), Rotation(pitch=0.000000, yaw=90.000046, roll=0.000000)) 0.0006481456803157926 30.0 Green False None
+Frame 10 saved
+VehicleControl(throttle=0.850000, steer=0.000440, brake=0.000000, hand_brake=False, reverse=False, manual_gear_shift=False, gear=0) Transform(Location(x=-1.980020, y=249.430008, z=0.001424), Rotation(pitch=0.000000, yaw=90.000046, roll=0.000000)) 0.0007696437533013523 30.0 Green False None
