@@ -11,11 +11,11 @@ import random
 import pandas as pd
 from datetime import datetime
 
-TOWN_NAME = 'Town02'
+TOWN_NAME = 'Town01'
 DIRECTORY = 'Data'
 IMAGE_WIDTH = 88
 IMAGE_HEIGHT = 200
-RECORD_LENGTH = 1000
+RECORD_LENGTH = 5000
 
 
 # datetime object containing current date and time
@@ -41,6 +41,13 @@ client.reload_world()
 world = client.load_world(TOWN_NAME)
 print('\n'+ TOWN_NAME + ' Loaded.')
 
+map = world.get_map()
+waypoint_list = map.generate_waypoints(2.0)
+w1 = []
+for i,w in enumerate(waypoint_list):
+    w1.append(w.transform.location)
+
+
 ego_bp = world.get_blueprint_library().find('vehicle.tesla.model3')
 ego_bp.set_attribute('role_name','ego')
 ego_color = random.choice(ego_bp.get_attribute('color').recommended_values)
@@ -61,6 +68,7 @@ else:
 # --------------
 # Spawn attached RGB camera
 # --------------
+waypoints = []
 
 data = {
     'image_name': [],
@@ -76,6 +84,7 @@ data = {
     'is_traffic_light':[],
     'traffic_light_state':[]
 }
+
 
 
 def convert_vector_to_scalar(carlavect):
@@ -107,6 +116,16 @@ def data_handler(image):
     data['speed_limit'].append(speed_limit)
     data['is_traffic_light'].append(is_traffic_light)
     data['traffic_light_state'].append(light_state)
+
+    location = ego_vehicle.get_location()
+    min = 1000000
+    p = None
+    for point in w1:
+        dist = point.distance(location)
+        if dist < min:
+            p, min = point, dist
+
+    waypoints.append([p.x,p.y])
 
 
 
@@ -152,3 +171,8 @@ if ego_vehicle is not None:
 
 print("\nData retrieval finished")
 print(rec_dir)
+
+np.save(r"C:\Users\hp\Desktop\Autonomous-Car\Carla\waypoints\wayppp", waypoints)
+
+# bara 200 ta run kon baad ba waypoint test neshon bede
+ 
