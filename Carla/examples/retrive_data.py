@@ -1,4 +1,5 @@
 #Dependencies
+from email import header
 import glob
 import os
 import sys
@@ -7,13 +8,14 @@ import numpy as np
 import carla
 import logging
 import random
+import pandas as pd
 from datetime import datetime
 
-TOWN_NAME = 'Town01'
+TOWN_NAME = 'Town02'
 DIRECTORY = 'Data'
 IMAGE_WIDTH = 88
 IMAGE_HEIGHT = 200
-RECORD_LENGTH = 10
+RECORD_LENGTH = 1000
 
 
 # datetime object containing current date and time
@@ -62,10 +64,17 @@ else:
 
 data = {
     'image_name': [],
-    'steering':[],
+    'steer':[],
     'throttle':[],
     'brake':[],
-
+    'speed':[],
+    'x':[],
+    'y':[],
+    'z':[],
+    'yaw':[],
+    'speed_limit':[],
+    'is_traffic_light':[],
+    'traffic_light_state':[]
 }
 
 
@@ -86,8 +95,18 @@ def data_handler(image):
     light_state = ego_vehicle.get_traffic_light_state()
     is_traffic_light = ego_vehicle.is_at_traffic_light()
     traffic_light = ego_vehicle.get_traffic_light()
-    print(control, transform, velocity, speed_limit, light_state, is_traffic_light, traffic_light)
-
+    data['image_name'].append(img_name)
+    data['steer'].append(control.steer)
+    data['throttle'].append(control.throttle)
+    data['brake'].append(control.brake)
+    data['speed'].append(velocity)
+    data['x'].append(transform.location.x)
+    data['y'].append(transform.location.y)
+    data['z'].append(transform.location.z)
+    data['yaw'].append(transform.rotation.yaw)
+    data['speed_limit'].append(speed_limit)
+    data['is_traffic_light'].append(is_traffic_light)
+    data['traffic_light_state'].append(light_state)
 
 
 
@@ -118,6 +137,10 @@ try:
 except Exception as inst:
     print('\nSimulation error:')
     print(inst)
+
+
+df = pd.DataFrame(data=data)
+df.to_csv(os.path.join(rec_dir, 'data.csv'), index=False)
 
 
 if ego_vehicle is not None:
