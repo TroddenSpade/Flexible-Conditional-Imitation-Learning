@@ -15,7 +15,7 @@ TOWN_NAME = 'Town01'
 DIRECTORY = 'Data'
 IMAGE_WIDTH = 88
 IMAGE_HEIGHT = 200
-RECORD_LENGTH = 5000
+RECORD_LENGTH = 25000
 
 
 # datetime object containing current date and time
@@ -45,7 +45,7 @@ map = world.get_map()
 waypoint_list = map.generate_waypoints(2.0)
 w1 = []
 for i,w in enumerate(waypoint_list):
-    w1.append(w.transform.location)
+    w1.append(w)
 
 
 ego_bp = world.get_blueprint_library().find('vehicle.tesla.model3')
@@ -69,6 +69,7 @@ else:
 # Spawn attached RGB camera
 # --------------
 waypoints = []
+waypoints2 = []
 
 data = {
     'image_name': [],
@@ -119,13 +120,25 @@ def data_handler(image):
 
     location = ego_vehicle.get_location()
     min = 1000000
-    p = None
-    for point in w1:
-        dist = point.distance(location)
+    p1 = None
+    for w in w1:
+        dist = location.distance(w.transform.location)
         if dist < min:
-            p, min = point, dist
+            p1, min = w, dist
 
-    waypoints.append([p.x,p.y])
+    # min = 1000000
+    # p2 = None
+    # for w in w1:
+    #     if w.lane_id != p1.lane_id:
+    #         dist = location.distance(w.transform.location)
+    #         if dist < min:
+    #            p2, min = w, dist 
+
+    p1 = p1.transform.location
+    # p2 = p2.transform.location
+
+    waypoints.append([p1.x, p1.y, p1.z])
+    # waypoints2.append([p2.x, p2.y, p2.z])
 
 
 
@@ -172,7 +185,8 @@ if ego_vehicle is not None:
 print("\nData retrieval finished")
 print(rec_dir)
 
-np.save(r"C:\Users\hp\Desktop\Autonomous-Car\Carla\waypoints\wayppp", waypoints)
+np.save(os.path.join(rec_dir, 'waypoints'), waypoints)
+# np.save(r"C:\Users\hp\Desktop\Autonomous-Car\Carla\waypoints\wayp2", waypoints2)
 
 # bara 200 ta run kon baad ba waypoint test neshon bede
  
