@@ -1,4 +1,5 @@
 #Dependencies
+from email import header
 import glob
 import os
 import sys
@@ -7,13 +8,14 @@ import numpy as np
 import carla
 import logging
 import random
+import pandas as pd
 from datetime import datetime
 
 TOWN_NAME = 'Town01'
 DIRECTORY = 'Data'
 IMAGE_WIDTH = 88
 IMAGE_HEIGHT = 200
-RECORD_LENGTH = 10
+RECORD_LENGTH = 25000
 
 
 # datetime object containing current date and time
@@ -39,6 +41,13 @@ client.reload_world()
 world = client.load_world(TOWN_NAME)
 print('\n'+ TOWN_NAME + ' Loaded.')
 
+map = world.get_map()
+waypoint_list = map.generate_waypoints(2.0)
+w1 = []
+for i,w in enumerate(waypoint_list):
+    w1.append(w)
+
+
 ego_bp = world.get_blueprint_library().find('vehicle.tesla.model3')
 ego_bp.set_attribute('role_name','ego')
 ego_color = random.choice(ego_bp.get_attribute('color').recommended_values)
@@ -59,14 +68,24 @@ else:
 # --------------
 # Spawn attached RGB camera
 # --------------
+waypoints = []
+waypoints2 = []
 
 data = {
     'image_name': [],
-    'steering':[],
+    'steer':[],
     'throttle':[],
     'brake':[],
-
+    'speed':[],
+    'x':[],
+    'y':[],
+    'z':[],
+    'yaw':[],
+    'speed_limit':[],
+    'is_traffic_light':[],
+    'traffic_light_state':[]
 }
+
 
 
 def convert_vector_to_scalar(carlavect):
@@ -86,8 +105,40 @@ def data_handler(image):
     light_state = ego_vehicle.get_traffic_light_state()
     is_traffic_light = ego_vehicle.is_at_traffic_light()
     traffic_light = ego_vehicle.get_traffic_light()
-    print(control, transform, velocity, speed_limit, light_state, is_traffic_light, traffic_light)
+    data['image_name'].append(img_name)
+    data['steer'].append(control.steer)
+    data['throttle'].append(control.throttle)
+    data['brake'].append(control.brake)
+    data['speed'].append(velocity)
+    data['x'].append(transform.location.x)
+    data['y'].append(transform.location.y)
+    data['z'].append(transform.location.z)
+    data['yaw'].append(transform.rotation.yaw)
+    data['speed_limit'].append(speed_limit)
+    data['is_traffic_light'].append(is_traffic_light)
+    data['traffic_light_state'].append(light_state)
 
+    location = ego_vehicle.get_location()
+    min = 1000000
+    p1 = None
+    for w in w1:
+        dist = location.distance(w.transform.location)
+        if dist < min:
+            p1, min = w, dist
+
+    # min = 1000000
+    # p2 = None
+    # for w in w1:
+    #     if w.lane_id != p1.lane_id:
+    #         dist = location.distance(w.transform.location)
+    #         if dist < min:
+    #            p2, min = w, dist 
+
+    p1 = p1.transform.location
+    # p2 = p2.transform.location
+
+    waypoints.append([p1.x, p1.y, p1.z])
+    # waypoints2.append([p2.x, p2.y, p2.z])
 
 
 
@@ -120,6 +171,10 @@ except Exception as inst:
     print(inst)
 
 
+df = pd.DataFrame(data=data)
+df.to_csv(os.path.join(rec_dir, 'data.csv'), index=False)
+
+
 if ego_vehicle is not None:
     if ego_cam is not None:
         ego_cam.stop()
@@ -129,3 +184,9 @@ if ego_vehicle is not None:
 
 print("\nData retrieval finished")
 print(rec_dir)
+
+np.save(os.path.join(rec_dir, 'waypoints'), waypoints)
+# np.save(r"C:\Users\hp\Desktop\Autonomous-Car\Carla\waypoints\wayp2", waypoints2)
+
+# bara 200 ta run kon baad ba waypoint test neshon bede
+ 
