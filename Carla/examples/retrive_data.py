@@ -11,14 +11,16 @@ import random
 import pandas as pd
 from datetime import datetime
 
+from agents.navigation.global_route_planner import GlobalRoutePlanner
+
 from generate_traffic import generate_traffic
+
 
 TOWN_NAME = 'Town01'
 DIRECTORY = 'Data'
 IMAGE_WIDTH = 88
 IMAGE_HEIGHT = 200
 RECORD_LENGTH = 2000
-
 
 
 def get_actor_blueprints(world, filter, generation):
@@ -253,16 +255,11 @@ print('spawned %d vehicles and %d walkers, press Ctrl+C to exit.' % (len(vehicle
 traffic_manager.global_percentage_speed_difference(30.0)
 
 
-
-map = world.get_map()
-waypoint_list = map.generate_waypoints(2.0)
-
 # --------------
 # Spawn attached RGB camera
 # --------------
 
-waypoints_object = []
-waypoints = []
+car_locations = []
 
 data = {
     'image_name': [],
@@ -293,7 +290,7 @@ def data_handler(image):
 
     control = ego_vehicle.get_control()
     transform = ego_vehicle.get_transform()
-    velocity = convert_vector_to_scalar(ego_vehicle.get_velocity())
+    velocity = ego_vehicle.get_velocity().length()
     speed_limit = ego_vehicle.get_speed_limit()
     light_state = ego_vehicle.get_traffic_light_state()
     is_traffic_light = ego_vehicle.is_at_traffic_light()
@@ -311,31 +308,8 @@ def data_handler(image):
     data['is_traffic_light'].append(is_traffic_light)
     data['traffic_light_state'].append(light_state)
 
-    location = ego_vehicle.get_location()
-    min = 1000000
-    p1 = None
-    for w in waypoint_list:
-        dist = location.distance(w.transform.location)
-        if dist < min:
-            p1, min = w, dist
+    car_locations.append(ego_vehicle.get_location())
 
-    if p1 not in waypoints_object:
-        waypoints_object.append(p1)
-        loc = p1.transform.location
-        waypoints.append([loc.x, loc.y, loc.z])
-
-    data['GPS_index'].append(len(waypoints)-1)
-
-    # min = 1000000
-    # p2 = None
-    # for w in w1:
-    #     if w.lane_id != p1.lane_id:
-    #         dist = location.distance(w.transform.location)
-    #         if dist < min:
-    #            p2, min = w, dist 
-
-    # p2 = p2.transform.location
-    # waypoints2.append([p2.x, p2.y, p2.z])
 
 
 
@@ -392,12 +366,62 @@ client.apply_batch([carla.command.DestroyActor(x) for x in all_id])
 
 time.sleep(0.5)
 
+print("\nSimulation finished")
+
+print("\nSetting Waypoints' Coordinates")
+map = world.get_map()
+sampling_resolution = 2
+grp = GlobalRoutePlanner(map, sampling_resolution)
+
+def other_side_of_road(waypoint):
+    """
+    Return the waypoint on the other side of the road.
+    """
+    if waypoint.road_idx == 0:
+        return waypoint.get_right_lane()
+    else:
+        return waypoint.get_left_lane()
+
+waypoints = []
+waypoints_p = []
+waypoints_m = []
+
+for idx, loc in enumerate(car_locations):
+
+    i = idx + 1
+    if i >= len(car_locations):
+        break
+    while car_locations[i].distance(car_locations[idx]) < 100:
+        i += 1
+
+    w1 = grp.trace_route(car_locations[idx], car_locations[i])
+
+    wp = []
+    wp_p = []
+    wp_m = []
+
+    for w in w1:
+        print(w)
+        wp.append([w[0].transform.location.x, w[0].transform.location.y, w[0].transform.location.z])
+
+        w_p = other_side_of_road(w[0])
+        wp_p.append([w_p.transform.location.x, w_p.transform.location.y, w_p.transform.location.z])
+
+        x = (w[0].transform.location.x + w_p.transform.location.x)/2
+        y = (w[0].transform.location.y + w_p.transform.location.y)/2
+        z = (w[0].transform.location.z + w_p.transform.location.z)/2
+        l_m = carla.Location(x, y, z)
+        wp_m.append([x, y, z])
+    
+    waypoints.append(wp)
+    waypoints_p.append(wp_p)
+    waypoints_m.append(wp_m)
+
 
 print("\nData retrieval finished")
 print(rec_dir)
 
 np.save(os.path.join(rec_dir, 'waypoints'), waypoints)
-# np.save(r"C:\Users\hp\Desktop\Autonomous-Car\Carla\waypoints\wayp2", waypoints2)
-
-# bara 200 ta run kon baad ba waypoint test neshon bede
+np.save(os.path.join(rec_dir, 'waypoints_p'), waypoints_p)
+np.save(os.path.join(rec_dir, 'waypoints_m'), waypoints_m)
  
