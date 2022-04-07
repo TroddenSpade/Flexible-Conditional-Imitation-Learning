@@ -20,7 +20,7 @@ TOWN_NAME = 'Town01'
 DIRECTORY = 'Data'
 IMAGE_WIDTH = 88
 IMAGE_HEIGHT = 200
-RECORD_LENGTH = 2000
+RECORD_LENGTH = 500
 
 
 def get_actor_blueprints(world, filter, generation):
@@ -274,7 +274,7 @@ data = {
     'speed_limit':[],
     'is_traffic_light':[],
     'traffic_light_state':[],
-    'GPS_index':[],
+    
 }
 
 
@@ -296,6 +296,7 @@ def data_handler(image):
     is_traffic_light = ego_vehicle.is_at_traffic_light()
     traffic_light = ego_vehicle.get_traffic_light()
     data['image_name'].append(img_name)
+    
     data['steer'].append(control.steer)
     data['throttle'].append(control.throttle)
     data['brake'].append(control.brake)
@@ -308,7 +309,7 @@ def data_handler(image):
     data['is_traffic_light'].append(is_traffic_light)
     data['traffic_light_state'].append(light_state)
 
-    car_locations.append(ego_vehicle.get_location())
+    # car_locations.append(ego_vehicle.get_location())
 
 
 
@@ -341,9 +342,6 @@ except Exception as inst:
     print('\nSimulation error:')
     print(inst)
 
-
-df = pd.DataFrame(data=data)
-df.to_csv(os.path.join(rec_dir, 'data.csv'), index=False)
 
 
 if ego_vehicle is not None:
@@ -389,8 +387,9 @@ waypoints_m = []
 for idx, loc in enumerate(car_locations):
 
     i = idx + 1
-    if i >= len(car_locations):
+    if i >= len(car_locations)-1:
         break
+    print(i)
     while car_locations[i].distance(car_locations[idx]) < 100:
         i += 1
 
@@ -404,24 +403,29 @@ for idx, loc in enumerate(car_locations):
         print(w)
         wp.append([w[0].transform.location.x, w[0].transform.location.y, w[0].transform.location.z])
 
-        w_p = other_side_of_road(w[0])
-        wp_p.append([w_p.transform.location.x, w_p.transform.location.y, w_p.transform.location.z])
+        # w_p = other_side_of_road(w[0])
+        # wp_p.append([w_p.transform.location.x, w_p.transform.location.y, w_p.transform.location.z])
 
-        x = (w[0].transform.location.x + w_p.transform.location.x)/2
-        y = (w[0].transform.location.y + w_p.transform.location.y)/2
-        z = (w[0].transform.location.z + w_p.transform.location.z)/2
-        l_m = carla.Location(x, y, z)
-        wp_m.append([x, y, z])
+        # x = (w[0].transform.location.x + w_p.transform.location.x)/2
+        # y = (w[0].transform.location.y + w_p.transform.location.y)/2
+        # z = (w[0].transform.location.z + w_p.transform.location.z)/2
+        # l_m = carla.Location(x, y, z)
+        # wp_m.append([x, y, z])
     
     waypoints.append(wp)
-    waypoints_p.append(wp_p)
-    waypoints_m.append(wp_m)
+    # waypoints_p.append(wp_p)
+    # waypoints_m.append(wp_m)
 
 
 print("\nData retrieval finished")
 print(rec_dir)
+for k, v in data.items():
+    print(k, len(v))
+
+df = pd.DataFrame(data=data)
+df.to_csv(os.path.join(rec_dir, 'data.csv'), index=False)
 
 np.save(os.path.join(rec_dir, 'waypoints'), waypoints)
-np.save(os.path.join(rec_dir, 'waypoints_p'), waypoints_p)
-np.save(os.path.join(rec_dir, 'waypoints_m'), waypoints_m)
+# np.save(os.path.join(rec_dir, 'waypoints_p'), waypoints_p)
+# np.save(os.path.join(rec_dir, 'waypoints_m'), waypoints_m)
  
