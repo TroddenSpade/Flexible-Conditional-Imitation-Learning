@@ -21,6 +21,8 @@ DIRECTORY = 'Data'
 IMAGE_WIDTH = 88
 IMAGE_HEIGHT = 200
 RECORD_LENGTH = 500
+NUMBER_OF_VEHICLES = 20
+NUMBER_OF_WALKERS = 10
 
 
 def get_actor_blueprints(world, filter, generation):
@@ -85,12 +87,13 @@ if 0 < number_of_spawn_points:
     random.shuffle(spawn_points)
     ego_transform = spawn_points[0]
     ego_vehicle = world.spawn_actor(ego_bp,ego_transform)
+    spawn_points.pop(0)
+    number_of_spawn_points -= 1
     print('\nVehicle is spawned')
 else: 
     print('\nCould not found any spawn points!')
 
-
-
+world.wait_for_tick()
 
 
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
@@ -129,16 +132,12 @@ blueprints = [x for x in blueprints if not x.id.endswith('ambulance')]
 
 blueprints = sorted(blueprints, key=lambda bp: bp.id)
 
-spawn_points = world.get_map().get_spawn_points()
-number_of_spawn_points = len(spawn_points)
-number_of_vehicles = 100
-
-if number_of_vehicles < number_of_spawn_points:
+if NUMBER_OF_VEHICLES < number_of_spawn_points:
     random.shuffle(spawn_points)
-elif number_of_vehicles > number_of_spawn_points:
+elif NUMBER_OF_VEHICLES > number_of_spawn_points:
     msg = 'requested %d vehicles, but could only find %d spawn points'
-    logging.warning(msg, number_of_vehicles, number_of_spawn_points)
-    number_of_vehicles = number_of_spawn_points
+    logging.warning(msg, NUMBER_OF_VEHICLES, number_of_spawn_points)
+    NUMBER_OF_VEHICLES = number_of_spawn_points
 
 # @todo cannot import these directly.
 SpawnActor = carla.command.SpawnActor
@@ -150,7 +149,7 @@ FutureActor = carla.command.FutureActor
 # --------------
 batch = []
 for n, transform in enumerate(spawn_points):
-    if n >= number_of_vehicles:
+    if n >= NUMBER_OF_VEHICLES:
         break
     blueprint = random.choice(blueprints)
     if blueprint.has_attribute('color'):
@@ -180,9 +179,8 @@ percentagePedestriansCrossing = 0.5     # how many pedestrians will walk through
 world.set_pedestrians_seed(0)
 random.seed(0)
 # 1. take all the random locations to spawn
-number_of_walkers = 10
 spawn_points = []
-for i in range(number_of_walkers):
+for i in range(NUMBER_OF_WALKERS):
     spawn_point = carla.Transform()
     loc = world.get_random_location_from_navigation()
     if (loc != None):
@@ -278,12 +276,6 @@ data = {
 }
 
 
-def convert_vector_to_scalar(carlavect):
-    # print(carlavect.length(), np.sqrt(carlavect.dot(carlavect)))
-    # assert carlavect.length() == np.sqrt(carlavect.dot(carlavect))
-    return carlavect.length()
-
-
 def data_handler(image):
     img_name = dt_string + '_' + str(image.frame) + '.jpg'
     image.save_to_disk(os.path.join(image_dir, img_name))
@@ -294,9 +286,9 @@ def data_handler(image):
     speed_limit = ego_vehicle.get_speed_limit()
     light_state = ego_vehicle.get_traffic_light_state()
     is_traffic_light = ego_vehicle.is_at_traffic_light()
-    traffic_light = ego_vehicle.get_traffic_light()
+    # traffic_light = ego_vehicle.get_traffic_light()
+
     data['image_name'].append(img_name)
-    
     data['steer'].append(control.steer)
     data['throttle'].append(control.throttle)
     data['brake'].append(control.brake)
@@ -309,9 +301,7 @@ def data_handler(image):
     data['is_traffic_light'].append(is_traffic_light)
     data['traffic_light_state'].append(light_state)
 
-    # car_locations.append(ego_vehicle.get_location())
-
-
+    car_locations.append(transform.location)
 
 
 cam_bp = None
