@@ -6,10 +6,7 @@ import pickle
 # with open(r'C:\Users\hp\Desktop\Autonomous-Car\Carla\waypoints\pos', 'rb') as fp:
 #     pos = pickle.load(fp)
 # pos = np.load(r"C:\Users\hp\Desktop\Autonomous-Car\Carla\waypoints\pos.npy", allow_pickle=True)
-w1 = np.load(r"C:\Users\hp\Desktop\Autonomous-Car\Carla\examples\waypoints.npy")
-
-print(w1.shape)
-print(w1)
+w1 = np.load(r"D:\Users\Parsa Sam\Documents\GitHub\Autonomous-Car\Carla\waypoints\1.npy")
 
 plt.scatter(w1[:,0], w1[:,1], s=5)
 # plt.scatter(w2[:,0], w2[:,1], s=5)
