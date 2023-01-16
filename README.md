@@ -43,6 +43,15 @@ In [this environment](https://www.unrealengine.com/marketplace/en-US/product/lan
 [//]: <> (talk about env)
 
 
+
+https://user-images.githubusercontent.com/33734646/212615848-410f06df-7442-4933-b292-018bbfc02c86.mp4
+
+
+
+https://user-images.githubusercontent.com/33734646/212620082-467928ee-6ff3-4421-8801-97a43983d04b.mp4
+
+
+
 #### Conditional Imitation Learning
 [//]: <> (how it was implemented and the differences with typical BC)
 
